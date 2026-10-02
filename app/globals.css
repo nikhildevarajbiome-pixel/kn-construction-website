@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-ivory font-sans text-navy antialiased; }
+  h1, h2, h3, h4 { @apply font-serif font-semibold tracking-tight; }
+  :focus-visible { outline: 2px solid #C6A66B; outline-offset: 3px; }
+  ::selection { background: #C6A66B; color: #101D2E; }
+}
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60; }
+  .btn-gold { @apply bg-gold text-navy hover:bg-[#d4b67c]; }
+  .btn-navy { @apply bg-navy text-white hover:bg-navy-2; }
+  .btn-outline-light { @apply border border-white/60 text-white hover:bg-white hover:text-navy; }
+  .btn-outline-dark { @apply border border-navy/40 text-navy hover:bg-navy hover:text-white; }
+  .field { @apply w-full border border-navy/25 bg-white px-4 py-3 text-base text-navy placeholder:text-grey/80 focus:border-gold-dark; }
+  .container-x { @apply mx-auto w-full max-w-7xl px-5 sm:px-8; }
+  .section { @apply py-20 sm:py-28; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
