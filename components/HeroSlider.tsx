@@ -16,6 +16,7 @@ import { company, heroSlides } from "@/config/company";
 import { images } from "@/config/images";
 
 const INTERVAL = 6500;
+const TRANSITION = 700;
 
 export function HeroSlider() {
   const slides = images.hero.slice(0, heroSlides.length);
@@ -26,46 +27,80 @@ export function HeroSlider() {
 
   const touchX = useRef<number | null>(null);
 
+  const slideCount = slides.length;
+
   const go = useCallback(
     (n: number) => {
-      if (slides.length === 0) return;
-      setIndex((n + slides.length) % slides.length);
+      if (slideCount === 0) return;
+
+      setIndex((n + slideCount) % slideCount);
     },
-    [slides.length],
+    [slideCount],
   );
 
   useEffect(() => {
-    setReduced(
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    const media = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
     );
+
+    const updateMotion = () => {
+      setReduced(media.matches);
+    };
+
+    updateMotion();
+
+    media.addEventListener("change", updateMotion);
+
+    return () => {
+      media.removeEventListener("change", updateMotion);
+    };
   }, []);
 
   useEffect(() => {
-    if (paused || reduced || slides.length <= 1) return;
+    if (paused || reduced || slideCount <= 1) return;
 
-    const t = setInterval(() => {
-      setIndex((i) => (i + 1) % slides.length);
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % slideCount);
     }, INTERVAL);
 
-    return () => clearInterval(t);
-  }, [paused, reduced, slides.length]);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [paused, reduced, slideCount]);
+
+  /*
+   * Only keep the current, previous and next images active.
+   *
+   * This prevents all five large JPGs from being decoded/rendered
+   * at the same time while still keeping the slider smooth.
+   */
+  const isNearCurrent = (i: number) => {
+    if (slideCount <= 2) return true;
+
+    const previous = (index - 1 + slideCount) % slideCount;
+    const next = (index + 1) % slideCount;
+
+    return i === index || i === previous || i === next;
+  };
 
   return (
     <section
       aria-roledescription="carousel"
       aria-label="Featured services"
-      className="relative h-[calc(100svh-5rem)] min-h-[560px] overflow-hidden bg-[#101D2E] sm:min-h-[620px]"
+      tabIndex={0}
+      className="relative h-[calc(100svh-5rem)] min-h-[560px] overflow-hidden bg-[#101D2E] outline-none sm:min-h-[620px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
       onTouchStart={(e) => {
-        touchX.current = e.touches[0].clientX;
+        touchX.current = e.touches[0]?.clientX ?? null;
       }}
       onTouchEnd={(e) => {
         if (touchX.current === null) return;
 
-        const dx = e.changedTouches[0].clientX - touchX.current;
+        const dx =
+          e.changedTouches[0]?.clientX - touchX.current;
 
         if (Math.abs(dx) > 50) {
           go(index + (dx < 0 ? 1 : -1));
@@ -74,51 +109,71 @@ export function HeroSlider() {
         touchX.current = null;
       }}
       onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") go(index - 1);
-        if (e.key === "ArrowRight") go(index + 1);
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          go(index - 1);
+        }
+
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          go(index + 1);
+        }
       }}
     >
       {/* Background Slides */}
-      {slides.map((img, i) => (
-        <div
-          key={`${img.src}-${i}`}
-          role="group"
-          aria-roledescription="slide"
-          aria-label={`${i + 1} of ${slides.length}`}
-          aria-hidden={i !== index}
-          className={`absolute inset-0 transition-opacity duration-[1400ms] ease-in-out ${
-            i === index
-              ? "opacity-100"
-              : "pointer-events-none opacity-0"
-          }`}
-        >
-          <Image
-            src={img.src}
-            alt={img.alt}
-            fill
-            priority={i === 0}
-            sizes="100vw"
-            className={`object-cover transition-transform duration-[8000ms] ease-out ${
-              i === index ? "scale-105" : "scale-100"
+      {slides.map((img, i) => {
+        const active = i === index;
+        const nearCurrent = isNearCurrent(i);
+
+        if (!nearCurrent) {
+          return null;
+        }
+
+        return (
+          <div
+            key={`${img.src}-${i}`}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${i + 1} of ${slides.length}`}
+            aria-hidden={!active}
+            className={`absolute inset-0 transition-opacity ease-out ${
+              active
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0"
             }`}
-          />
+            style={{
+              transitionDuration: `${TRANSITION}ms`,
+              zIndex: active ? 2 : 1,
+            }}
+          >
+            <Image
+              src={img.src}
+              alt={img.alt}
+              fill
+              priority={i === 0}
+              loading={i === 0 ? "eager" : "lazy"}
+              sizes="100vw"
+              quality={82}
+              className={`object-cover ${
+                reduced
+                  ? ""
+                  : "transition-transform duration-[1200ms] ease-out"
+              } ${active ? "scale-[1.02]" : "scale-100"}`}
+            />
 
-          {/* Cinematic overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#081321]/90 via-[#101D2E]/55 to-[#101D2E]/10" />
+            {/* Cinematic overlays */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#081321]/90 via-[#101D2E]/55 to-[#101D2E]/10" />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-[#101D2E]/80 via-transparent to-[#101D2E]/15" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#101D2E]/80 via-transparent to-[#101D2E]/15" />
 
-          <div className="absolute inset-0 bg-black/10" />
-        </div>
-      ))}
+            <div className="absolute inset-0 bg-black/10" />
+          </div>
+        );
+      })}
 
       {/* Main Content */}
       <div className="container-x relative z-10 flex h-full items-center">
-        <div
-          className={`w-full max-w-3xl pb-10 pt-10 sm:pt-14 ${
-            index >= 0 ? "animate-rise" : ""
-          }`}
-        >
+        <div className="w-full max-w-3xl pb-10 pt-10 sm:pt-14">
           {/* Eyebrow */}
           <div className="mb-5 flex items-center gap-3 sm:mb-7">
             <span className="h-px w-7 bg-[#C6A66B] sm:w-10" />
@@ -131,7 +186,10 @@ export function HeroSlider() {
           </div>
 
           {/* Headline */}
-          <h1 className="max-w-3xl font-serif text-[clamp(2.25rem,5.2vw,4.8rem)] font-medium leading-[1.05] tracking-[-0.035em] text-white">
+          <h1
+            key={`headline-${index}`}
+            className="max-w-3xl animate-rise font-serif text-[clamp(2.25rem,5.2vw,4.8rem)] font-medium leading-[1.05] tracking-[-0.035em] text-white"
+          >
             {heroSlides[index]?.headline}
           </h1>
 
@@ -139,7 +197,10 @@ export function HeroSlider() {
           <div className="mt-5 h-[2px] w-16 bg-gradient-to-r from-[#E5CC97] to-transparent sm:mt-7 sm:w-20" />
 
           {/* Description */}
-          <p className="mt-5 max-w-lg text-sm leading-7 text-white/75 sm:mt-7 sm:text-base sm:leading-8">
+          <p
+            key={`description-${index}`}
+            className="mt-5 max-w-lg animate-rise text-sm leading-7 text-white/75 sm:mt-7 sm:text-base sm:leading-8"
+          >
             {heroSlides[index]?.description}
           </p>
 
@@ -147,11 +208,11 @@ export function HeroSlider() {
           <div className="mt-7 flex flex-wrap items-center gap-3 sm:mt-9">
             <a
               href={company.phoneHref}
-              tabIndex={0}
               className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-[#E1C58D]/70 bg-gradient-to-b from-[#E3CB98] to-[#B89455] px-5 py-3 text-xs font-semibold text-[#101D2E] shadow-[0_8px_30px_rgba(198,166,107,0.18)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(198,166,107,0.3)] sm:gap-3 sm:px-6 sm:py-3.5 sm:text-sm"
             >
               <Phone size={15} />
               Call Now
+
               <ArrowUpRight
                 size={14}
                 className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
@@ -236,14 +297,19 @@ export function HeroSlider() {
 
           <div className="hidden items-center gap-3 text-[10px] uppercase tracking-[0.25em] text-white/55 sm:flex">
             <span>Scroll to explore</span>
-            <ArrowDown size={15} className="animate-bounce text-[#D9BD85]" />
+            <ArrowDown
+              size={15}
+              className="animate-bounce text-[#D9BD85]"
+            />
           </div>
 
           <span className="font-serif text-sm text-white/65">
             <span className="text-[#D9BD85]">
               {String(index + 1).padStart(2, "0")}
             </span>
+
             <span className="mx-2 text-white/30">/</span>
+
             {String(slides.length).padStart(2, "0")}
           </span>
         </div>
