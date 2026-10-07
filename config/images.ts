@@ -36,29 +36,29 @@ export const images = {
   // About section
   about: {
     src: "/images/f.jpg",
-    alt: "Building and construction",
+    alt: "Construction professional working on a building project",
   } as SiteImage,
 
   // Services
   services: {
     "real-estate": {
-      src: "/images/g.jpg",
-      alt: "Real estate and property",
+      src: "/images/real-estate.jpg",
+      alt: "Residential real estate property",
     },
 
     "property-documentation": {
-      src: "/images/h.jpg",
-      alt: "Property documentation",
+      src: "/images/property-documentation.jpg",
+      alt: "Property documentation and paperwork",
     },
 
     "building-materials": {
-      src: "/images/i.jpg",
-      alt: "Building materials",
+      src: "/images/building-materials.jpg",
+      alt: "Concrete blocks and building materials",
     },
 
     construction: {
-      src: "/images/a.jpg",
-      alt: "Construction site",
+      src: "/images/construction.jpg",
+      alt: "Building construction work",
     },
 
     "electrical-plumbing": {
@@ -67,59 +67,74 @@ export const images = {
     },
 
     renovation: {
-      src: "/images/f.jpg",
-      alt: "Building renovation",
+      src: "/images/renovation.jpg",
+      alt: "Interior renovation and improvement work",
+    },
+
+    interiors: {
+      src: "/images/interiors.jpg",
+      alt: "Modern interior work and finishing",
+    },
+
+    "layout-formation": {
+      src: "/images/layout-formation.jpg",
+      alt: "Layout planning and property development plan",
     },
   } as Record<string, SiteImage>,
 
-  // Project gallery
+  // Project Gallery
+  // Includes images representing all services
   gallery: [
     {
-      src: "/images/a.jpg",
-      alt: "Construction project",
+      src: "/images/real-estate.jpg",
+      alt: "Residential real estate property",
+      category: "Real Estate",
+    },
+    {
+      src: "/images/property-documentation.jpg",
+      alt: "Property documentation and paperwork",
+      category: "Property Documentation",
+    },
+    {
+      src: "/images/building-materials.jpg",
+      alt: "Concrete blocks and building materials",
+      category: "Building Materials",
+    },
+    {
+      src: "/images/construction.jpg",
+      alt: "Building construction work",
       category: "Construction",
     },
     {
-      src: "/images/b.jpg",
-      alt: "Residential project",
-      category: "Residential",
+      src: "/images/j.jpg",
+      alt: "Electrical and plumbing services",
+      category: "Electrical & Plumbing",
     },
     {
-      src: "/images/c.jpg",
-      alt: "Building development",
-      category: "Construction",
-    },
-    {
-      src: "/images/d.jpg",
-      alt: "Building project",
-      category: "Residential",
-    },
-    {
-      src: "/images/e.jpg",
-      alt: "Construction work",
-      category: "Construction",
-    },
-    {
-      src: "/images/f.jpg",
-      alt: "Renovation project",
+      src: "/images/renovation.jpg",
+      alt: "Renovation and improvement work",
       category: "Renovation",
     },
     {
-      src: "/images/g.jpg",
-      alt: "Property project",
-      category: "Residential",
+      src: "/images/interiors.jpg",
+      alt: "Modern interior work and finishing",
+      category: "Interiors",
     },
     {
-      src: "/images/h.jpg",
-      alt: "Building materials project",
-      category: "Materials",
+      src: "/images/layout-formation.jpg",
+      alt: "Layout planning and property development",
+      category: "Layout Formation",
     },
   ] as (SiteImage & { category: string })[],
 };
 
 export const galleryCategories = [
-  "Residential",
+  "Real Estate",
+  "Property Documentation",
+  "Building Materials",
   "Construction",
+  "Electrical & Plumbing",
   "Renovation",
-  "Materials",
+  "Interiors",
+  "Layout Formation",
 ] as const;
