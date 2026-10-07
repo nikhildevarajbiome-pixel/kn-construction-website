@@ -15,8 +15,8 @@ export const company = {
   phoneHref: "tel:+919972200369",
 
   // WhatsApp
-  whatsappDisplay: "+91 9686995996",
-  whatsappHref: "https://wa.me/919686995996",
+  whatsappDisplay: "+91 9972200369",
+  whatsappHref: "https://wa.me/919972200369",
 
   // Email
   email: "knconstruction98@gmail.com",
